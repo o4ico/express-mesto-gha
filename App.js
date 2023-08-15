@@ -1,29 +1,34 @@
-
-// --------------------------------------------------------------------------------------бэкенд начало
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
-const { routes } = require('./routes');
-
-const { PORT = 3000 } = process.env;
-const DATABASE_URL = 'mongodb://127.0.0.1:27017/mestodb';
+const { PORT = 3000, dataBase_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 
 mongoose
-  .connect(DATABASE_URL)
+  .connect(dataBase_URL, {})
   .then(() => {
-    console.log(`Connected to database on ${DATABASE_URL}`);
+    console.log(`Подключен к базе данных на ${dataBase_URL}`);
   })
   .catch((err) => {
-    console.log('Error on database connection');
-    console.error(err);
+    console.log(`Ошибка при подключении к базе данных ${err}`);
   });
 
-app.use(routes);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+  req.user = {
+    _id: '64db0f2905cee63f80294a97',
+  };
+
+  next();
+});
+
+app.use('/cards', require('./routes/cards'));
+app.use('/users', require('./routes/users'));
 
 app.listen(PORT, () => {
   console.log(`App started on port ${PORT}`);
 });
-// --------------------------------------------------------------------------------------бэкенд конец
