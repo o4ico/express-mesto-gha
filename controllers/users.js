@@ -41,7 +41,11 @@ module.exports.patchUserInfo = (req, res) => {
   const { name, about } = req.body;
   const { _id } = req.user;
   console.log(name, about, req.user._id, _id)
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(req.user._id, { name, about }, {
+    new: true, // обработчик then получит на вход обновлённую запись
+    runValidators: true, // данные будут валидированы перед изменением
+    upsert: false
+  })
     .then(user => {
       if (!user) {
         return res.status(404).send({ message: `Пользователь по указанному ${_id} не найден` })
@@ -63,7 +67,11 @@ module.exports.patchUserAvatar = (req, res) => {
   const { avatar } = req.body;
   const { _id } = req.user;
   console.log(avatar, req.user._id)
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar }, {
+    new: true, // обработчик then получит на вход обновлённую запись
+    runValidators: true, // данные будут валидированы перед изменением
+    upsert: false
+  })
     .then(user => {
       if (!user) {
         return res.status(404).send({ message: `Пользователь по указанному ${_id} не найден` })
