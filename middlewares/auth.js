@@ -3,13 +3,11 @@ const { SECRET_KEY } = require('../utils/constants');
 
 module.exports = (req, res, next) => {
   try {
-    const { authorization } = req.headers;
-
-    if (!authorization || !authorization.startsWith('Bearer ')) {
+    if (!req.cookies.jwt) {
       return res.status(401).send({ message: 'Необходима авторизация' });
     }
 
-    const token = authorization.replace('Bearer ', '');
+    const token = req.cookies.jwt;
     let payload;
 
     try {
