@@ -28,7 +28,7 @@ mongoose
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(errors());
+
 /*
 app.use((req, res, next) => {
   req.user = {
@@ -45,6 +45,7 @@ app.post('/signup', createUserValidation, createUser);
 app.use('*', (req, res) => {
   return res.status(404).send({ message: 'Страницы не существует' })
 });
+app.use(errors());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // за 15 минут

@@ -4,9 +4,11 @@ const { getUserById, getUsers, patchUserInfo, patchUserAvatar, getCurrentUserInf
 const { userIdValidation, userInfoEditValidation, userAvatarEditValidation } = require('../middlewares/validation');
 
 router.get('/', getUsers);
+router.get('/me', getCurrentUserInfo);
 router.get('/:userId', userIdValidation, getUserById);
+
 router.patch('/me', userInfoEditValidation, patchUserInfo);
 router.patch('/me/avatar', userAvatarEditValidation, patchUserAvatar);
-router.get('/me', getCurrentUserInfo);
+
 
 module.exports = router;

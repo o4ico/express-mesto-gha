@@ -125,12 +125,12 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.getCurrentUserInfo = (req, res) => {
-  const { userId } = req.user._id;
-  console.log(userId);
-  User.findById(userId)
+  const { _id } = req.user;
+  console.log(req.user._id);
+  User.findById(req.user._id)
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: `Пользователь по указанному ${userId} не найден` })
+        return res.status(404).send({ message: `Пользователь по указанному ${_id} не найден` })
       }
 
       return res.status(200).send(user);
