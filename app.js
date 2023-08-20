@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { errors } = require('celebrate');
+const { loginValidation, createUserValidation } = require('./middlewares/validation');
 const auth = require('./middlewares/auth.js');
 const { login, createUser } = require('./controllers/users');
 
@@ -26,6 +28,7 @@ mongoose
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(errors());
 /*
 app.use((req, res, next) => {
   req.user = {
@@ -37,8 +40,8 @@ app.use((req, res, next) => {
 
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
 app.use('*', (req, res) => {
   return res.status(404).send({ message: 'Страницы не существует' })
 });
