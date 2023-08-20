@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { errors } = require('celebrate');
 const { loginValidation, createUserValidation } = require('./middlewares/validation');
+const errorHandler = require('./middlewares/errorHandler');
 const auth = require('./middlewares/auth.js');
 const { login, createUser } = require('./controllers/users');
 
@@ -29,14 +30,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
-/*
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64db0f2905cee63f80294a97',
-  };
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // за 15 минут
+  max: 100, // можно совершить максимум 100 запросов с одного IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-  next();
-});*/
+app.use(limiter);
 
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
@@ -46,18 +47,7 @@ app.use('*', (req, res) => {
   return res.status(404).send({ message: 'Страницы не существует' })
 });
 app.use(errors());
-app.use((err, req, res, next) => {
-  res.status(500).send({ message: err.message });
-});
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // за 15 минут
-  max: 100, // можно совершить максимум 100 запросов с одного IP
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use(limiter);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App started on port ${PORT}`);

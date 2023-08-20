@@ -2,11 +2,9 @@ const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 const { SECRET_KEY } = require('../utils/constants');
-const { InternalServerError } = require('../errors/InternalServerError');
 const { ConflictError } = require('../errors/ConflictError');
 const { NotFoundError } = require('../errors/NotFoundError');
 const { UnauthorizedError } = require('../errors/UnauthorizedError');
-const { ForbiddenError } = require('../errors/ForbiddenError');
 const { BadRequestError } = require('../errors/BadRequestError');
 
 module.exports.getUsers = (req, res, next) => {
@@ -29,11 +27,11 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
-      }
-      if (err.code === 11000) {
+      } else if (err.code === 11000) {
         next(new ConflictError('Пользователь с этим email уже существует'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
