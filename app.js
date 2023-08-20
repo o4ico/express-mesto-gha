@@ -46,6 +46,9 @@ app.use('*', (req, res) => {
   return res.status(404).send({ message: 'Страницы не существует' })
 });
 app.use(errors());
+app.use((err, req, res, next) => {
+  res.status(500).send({ message: err.message });
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // за 15 минут
