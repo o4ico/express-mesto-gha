@@ -2,6 +2,7 @@ const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
+    .populate('owner')
     .then(cards => res.status(200).send(cards))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
@@ -23,13 +24,12 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
-  console.log(cardId);
   Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: `Карточка с указанным  id(${cardId}) не найдена` });
+        return res.status(404).send({ message: `Карточка с указанным id(${cardId}) не найдена` });
       }
-      if (cardId !== req.user._id) {
+      if (card.owner.toString() !== req.user._id) {
         return res.status(403).send({ message: 'Нельзя удалить чужую карточку' });
       }
       return res.status(200).send(card);
@@ -51,7 +51,7 @@ module.exports.putLikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: `Пользователь по указанному id(${cardId}) не найден` })
+        return res.status(404).send({ message: `Карточка с указанным id(${cardId}) не найдена` })
       }
       return res.status(200).send(card)
     })
@@ -72,7 +72,7 @@ module.exports.deleteLikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: `Пользователь по указанному id(${cardId}) не найден` })
+        return res.status(404).send({ message: `Карточка с указанным id(${cardId}) не найдена` })
       }
       return res.status(200).send(card)
     })
