@@ -19,7 +19,7 @@ module.exports.createCard = (req, res, next) => {
     .then((cards) => res.status(201).send(cards))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return Promise.reject(new BadRequestError('Переданы некорректные данные при создании карточки'));
+        return next(new BadRequestError('Переданы некорректные данные при создании карточки'));
       }
       next(err);
     });
@@ -30,10 +30,10 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
-        return Promise.reject(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
+        return next(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
       }
       if (card.owner.toString() !== req.user._id) {
-        return Promise.reject(new ForbiddenError('Нельзя удалить чужую карточку'));
+        return next(new ForbiddenError('Нельзя удалить чужую карточку'));
       }
       console.log(card.owner.toString(), card.owner, req.user._id, cardId);
       return card.deleteOne()
@@ -42,7 +42,7 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return Promise.reject(new BadRequestError('Переданы некорректные данные при удалении карточки'));
+        return next(new BadRequestError('Переданы некорректные данные при удалении карточки'));
       }
       next(err);
     });
@@ -57,14 +57,14 @@ module.exports.putLikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return Promise.reject(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
+        return next(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
       } else {
         return res.status(200).send(card)
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return Promise.reject(new BadRequestError('Переданы некорректные данные при добавлении лайка карточке'));
+        return next(new BadRequestError('Переданы некорректные данные при добавлении лайка карточке'));
       }
       next(err);
     });
@@ -79,14 +79,14 @@ module.exports.deleteLikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return Promise.reject(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
+        return next(new NotFoundError(`Карточка с указанным id(${cardId}) не найдена`));
       } else {
         return res.status(200).send(card)
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return Promise.reject(new BadRequestError('Переданы некорректные данные при удалении лайка с карточки'));
+        return next(new BadRequestError('Переданы некорректные данные при удалении лайка с карточки'));
       }
       next(err);
     });

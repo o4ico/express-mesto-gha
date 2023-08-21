@@ -9,7 +9,7 @@ const { errors } = require('celebrate');
 const { loginValidation, createUserValidation } = require('./middlewares/validation');
 const errorHandler = require('./middlewares/errorHandler');
 const { NotFoundError } = require('./errors/NotFoundError');
-const auth = require('./middlewares/auth.js');
+const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000, dataBase_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
@@ -45,7 +45,7 @@ app.use('/users', auth, require('./routes/users'));
 app.post('/signin', loginValidation, login);
 app.post('/signup', createUserValidation, createUser);
 app.use('*', (req, res) => {
-  return Promise.reject(new NotFoundError('Страницы не существует'))
+  return next(new NotFoundError('Страницы не существует'))
 });
 app.use(errors());
 app.use(errorHandler);
