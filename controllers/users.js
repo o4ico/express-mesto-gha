@@ -9,12 +9,14 @@ const { BadRequestError } = require('../errors/BadRequestError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then(user => res.status(200).send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => next(err));
 };
-
+/* eslint-disable consistent-return */
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
   if (!email || !password) {
     return next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
@@ -23,24 +25,23 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(201).send({ name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id }))
+    .then((user) => res.status(201).send({
+      name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id,
+    }))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
-      } else if (err.code === 11000) {
-        console.log('я работаю')
+      } if (err.code === 11000) {
         return next(new ConflictError('Пользователь с этим email уже существует'));
-      } else {
-        next(err);
       }
+      return next(err);
     });
 };
 
 module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
-  console.log(userId);
   User.findById(userId)
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return next(new NotFoundError(`Пользователь по указанному ${userId} не найден`));
       }
@@ -51,20 +52,19 @@ module.exports.getUserById = (req, res, next) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
 module.exports.patchUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   const { _id } = req.user;
-  console.log(name, about, req.user._id, _id)
   User.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true, // обработчик then получит на вход обновлённую запись
     runValidators: true, // данные будут валидированы перед изменением
-    upsert: false
+    upsert: false,
   })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
@@ -77,20 +77,19 @@ module.exports.patchUserInfo = (req, res, next) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       }
-      next(err);
+      return next(err);
     });
 };
 
 module.exports.patchUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const { _id } = req.user;
-  console.log(avatar, req.user._id)
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true, // обработчик then получит на вход обновлённую запись
     runValidators: true, // данные будут валидированы перед изменением
-    upsert: false
+    upsert: false,
   })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
@@ -101,7 +100,7 @@ module.exports.patchUserAvatar = (req, res, next) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные при обновлении аватара профиля'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -113,7 +112,7 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign(
         { _id: user._id },
         SECRET_KEY,
-        { expiresIn: '7d' }
+        { expiresIn: '7d' },
       );
 
       return res.cookie('jwt', token, {
@@ -123,16 +122,13 @@ module.exports.login = (req, res, next) => {
         .send({ message: 'Успешная авторизация!' });
     })
 
-    .catch((err) => {
-      return next(new UnauthorizedError('Ошибка авторизации'));
-    });
+    .catch(() => next(new UnauthorizedError('Ошибка авторизации')));
 };
 
 module.exports.getCurrentUserInfo = (req, res, next) => {
   const { _id } = req.user;
-  console.log(req.user._id);
   User.findById(req.user._id)
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
@@ -143,6 +139,6 @@ module.exports.getCurrentUserInfo = (req, res, next) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };

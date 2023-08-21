@@ -12,20 +12,13 @@ const { NotFoundError } = require('./errors/NotFoundError');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
 
-const { PORT = 3000, dataBase_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const { PORT = 3000, dataBaseURL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 
 app.use(cookieParser());
 
-mongoose
-  .connect(dataBase_URL, {})
-  .then(() => {
-    console.log(`Подключен к базе данных на ${dataBase_URL}`);
-  })
-  .catch((err) => {
-    console.log(`Ошибка при подключении к базе данных ${err}`);
-  });
+mongoose.connect(dataBaseURL, {});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,15 +34,18 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use('/cards', auth, require('./routes/cards'));
+
 app.use('/users', auth, require('./routes/users'));
+
 app.post('/signin', loginValidation, login);
 app.post('/signup', createUserValidation, createUser);
-app.use('*', (req, res) => {
-  return next(new NotFoundError('Страницы не существует'))
+
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
+
 app.use(errors());
+
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`App started on port ${PORT}`);
-});
+app.listen(PORT);

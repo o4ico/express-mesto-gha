@@ -34,26 +34,26 @@ const userSchema = new mongoose.Schema({
     validate: {
       validator: (v) => validator.isEmail(v),
       message: 'Неверно указан email',
-    }
+    },
   },
   password: {
     type: String,
     required: true,
-    select: false
+    select: false,
   },
 }, { versionKey: false });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return next(new UnauthorizedError('Неправильные почта или пароль'))
+        return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return next(new UnauthorizedError('Неправильные почта или пароль'))
+            return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
           }
 
           return user; // теперь user доступен
