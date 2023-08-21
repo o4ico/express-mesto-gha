@@ -17,7 +17,7 @@ module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
 
   if (!email || !password) {
-    next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
+    return Promise.reject(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
   }
   bcrypt.hash(req.body.password, 8)
     .then((hash) => User.create({
@@ -26,9 +26,10 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => res.status(201).send({ name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id }))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
+        return next(new BadRequestError('Переданы некорректные данные при добавлении пользователя'));
       } else if (err.code === 11000) {
-        next(new ConflictError('Пользователь с этим email уже существует'));
+        console.log('я работаю')
+        return next(new ConflictError('Пользователь с этим email уже существует'));
       } else {
         next(err);
       }
@@ -41,14 +42,14 @@ module.exports.getUserById = (req, res, next) => {
   User.findById(userId)
     .then(user => {
       if (!user) {
-        next(new NotFoundError(`Пользователь по указанному ${userId} не найден`));
+        return Promise.reject(new NotFoundError(`Пользователь по указанному ${userId} не найден`));
       }
 
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return Promise.reject(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });
@@ -65,16 +66,16 @@ module.exports.patchUserInfo = (req, res, next) => {
   })
     .then(user => {
       if (!user) {
-        next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
+        return Promise.reject(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
       if (name === undefined || about === undefined) {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+        return Promise.reject(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       }
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+        return Promise.reject(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       }
       next(err);
     });
@@ -91,14 +92,14 @@ module.exports.patchUserAvatar = (req, res, next) => {
   })
     .then(user => {
       if (!user) {
-        next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
+        return Promise.reject(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
 
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении аватара профиля'));
+        return Promise.reject(new BadRequestError('Переданы некорректные данные при обновлении аватара профиля'));
       }
       next(err);
     });
@@ -123,7 +124,7 @@ module.exports.login = (req, res, next) => {
     })
 
     .catch((err) => {
-      next(new UnauthorizedError('Ошибка авторизации'));
+      return Promise.reject(new UnauthorizedError('Ошибка авторизации'));
     });
 };
 
@@ -133,14 +134,14 @@ module.exports.getCurrentUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then(user => {
       if (!user) {
-        next(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
+        return Promise.reject(new NotFoundError(`Пользователь по указанному ${_id} не найден`));
       }
 
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return Promise.reject(new BadRequestError('Переданы некорректные данные'));
       }
       next(err);
     });

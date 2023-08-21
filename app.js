@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const { errors } = require('celebrate');
 const { loginValidation, createUserValidation } = require('./middlewares/validation');
 const errorHandler = require('./middlewares/errorHandler');
+const { NotFoundError } = require('./errors/NotFoundError');
 const auth = require('./middlewares/auth.js');
 const { login, createUser } = require('./controllers/users');
 
@@ -44,7 +45,7 @@ app.use('/users', auth, require('./routes/users'));
 app.post('/signin', loginValidation, login);
 app.post('/signup', createUserValidation, createUser);
 app.use('*', (req, res) => {
-  return res.status(404).send({ message: 'Страницы не существует' })
+  return Promise.reject(new NotFoundError('Страницы не существует'))
 });
 app.use(errors());
 app.use(errorHandler);
